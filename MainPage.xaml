@@ -9,11 +9,87 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-        <Button Content="Hellow World" Margin="405,354,0,0" VerticalAlignment="Top" Click="Button_Click"/>
-        <TextBlock HorizontalAlignment="Left" Margin="50,50,0,0" Text="Group Info" TextWrapping="Wrap" VerticalAlignment="Top" Style="{StaticResource TitleTextBlockStyle}"/>
-        <TextBlock HorizontalAlignment="Left" Margin="50,96,0,0" Text="Players:" TextWrapping="Wrap" VerticalAlignment="Top"/>
-        <TextBlock HorizontalAlignment="Left" Margin="127,96,0,0" Text="Level:" TextWrapping="Wrap" VerticalAlignment="Top"/>
-        <AutoSuggestBox HorizontalAlignment="Left" Margin="362,50,0,0" Width="1064"/>
+        <TextBlock HorizontalAlignment="Left" Margin="84,53,0,0" Text="Group Info" TextWrapping="Wrap" VerticalAlignment="Top" Style="{StaticResource TitleTextBlockStyle}"/>
+        <TextBlock HorizontalAlignment="Left" Margin="84,99,0,0" Text="Players:" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <TextBlock HorizontalAlignment="Left" Margin="161,99,0,0" Text="Level:" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <AutoSuggestBox PlaceholderText="Search for a monster..." QueryIcon="Find" HorizontalAlignment="Left" Margin="425,50,0,0" Width="800"
+                        TextChanged="AutoSuggestBox_TextChanged"
+                        QuerySubmitted="AutoSuggestBox_QuerySubmitted"
+                        SuggestionChosen="AutoSuggestBox_SuggestionChosen"/>
+        <Grid Margin="425,100,50,50">
+            <ListView x:Name="DisplayMonsterList" Margin="0,0,0,32">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListViewItem">
+                                    <ListViewItemPresenter ContentMargin="0" Padding="0" />
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ListView.ItemContainerStyle>
+                <ListView.HeaderTemplate>
+                    <DataTemplate>
+                        <Grid Padding="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="20*" MinWidth="200"/>
+                                <ColumnDefinition Width="2*" MinWidth="60"/>
+                                <ColumnDefinition Width="15*" MinWidth="140"/>
+                                <ColumnDefinition Width="15*" MinWidth="140"/>
+                                <ColumnDefinition Width="15*" MinWidth="150"/>
+                            </Grid.ColumnDefinitions>
 
+                            <Border BorderBrush="AntiqueWhite" BorderThickness="0,0,0,0.5">
+                                <TextBlock Text="Name" Margin="5,0,0,0"/>
+                            </Border>
+                            <Border Grid.Column="1" BorderBrush="AntiqueWhite" BorderThickness="0,0,0,0.5">
+                                <TextBlock Text="CR" Margin="5,0,0,0"/>
+                            </Border>
+                            <Border Grid.Column="2" BorderBrush="AntiqueWhite" BorderThickness="0,0,0,0.5">
+                                <TextBlock Text="Size" Grid.Column="2" Margin="0,0,5,0"/>
+                            </Border>
+                            <Border Grid.Column="3" BorderBrush="AntiqueWhite" BorderThickness="0,0,0,0.5">
+                                <TextBlock Text="Type" Grid.Column="2" Margin="0,0,5,0"/>
+                            </Border>
+                            <Border Grid.Column="4" BorderBrush="AntiqueWhite" BorderThickness="0,0,0,0.5">
+                                <TextBlock Text="Alignment" Grid.Column="2" Margin="0,0,5,0"/>
+                            </Border>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.HeaderTemplate>
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="20*" MinWidth="200"/>
+                                <ColumnDefinition Width="2*" MinWidth="50"/>
+                                <ColumnDefinition Width="15*" MinWidth="150"/>
+                                <ColumnDefinition Width="15*" MinWidth="150"/>
+                                <ColumnDefinition Width="15*" MinWidth="150"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0"  BorderBrush="AntiqueWhite" BorderThickness="0,0,0,0.5">
+                                <TextBlock Text="{Binding Name}" Margin="0,0,5,0"/>
+                            </Border>
+                            <Border Grid.Column="1" BorderBrush="AntiqueWhite" BorderThickness="0,0,0,0.5">
+                                <TextBlock Text="{Binding CR}" Margin="0,0,5,0"/>
+                            </Border>
+                            <Border Grid.Column="2" BorderBrush="AntiqueWhite" BorderThickness="0,0,0,0.5">
+                                <TextBlock Text="{Binding Size}" Margin="0,0,5,0"/>
+                            </Border>
+                            <Border Grid.Column="3" BorderBrush="AntiqueWhite" BorderThickness="0,0,0,0.5">
+                                <TextBlock Text="{Binding Type}"  Margin="0,0,5,0"/>
+                            </Border>
+                            <Border Grid.Column="4" BorderBrush="AntiqueWhite" BorderThickness="0,0,0,0.5">
+                                <TextBlock Text="{Binding Alignment}"  Margin="0,0,5,0"/>
+                            </Border>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            <Button Content="Previous" Click="PreviousButton_Click" Margin="0,538,0,0" Width="100" VerticalAlignment="Top" RenderTransformOrigin="-0.56,0.358"/>
+            <Button Content="Next" Click="NextButton_Click" Margin="704,538,0,0" Width="100" VerticalAlignment="Top" RenderTransformOrigin="-0.56,0.358"/>
+        </Grid>
     </Grid>
 </Page>

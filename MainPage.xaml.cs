@@ -1,82 +1,155 @@
-﻿using System;
+﻿using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
-
-// The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
 namespace encounter_difficulty
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class MainPage : Page
     {
+
+        private List<SimpleMonster> mainMonsterList;
+        private ObservableCollection<FullMonsterDetails> displayMonsterList;
+        int pageIndex = -1;
+        int pageSize = 10;
+
         public MainPage()
         {
             this.InitializeComponent();
-            Get_Monsters();
+
+            Get_All_Monsters();
+            displayMonsterList = new ObservableCollection<FullMonsterDetails>();
         }
 
-        private async void Get_Monsters()
+
+        private void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
-            //Create an HTTP client object
-            Windows.Web.Http.HttpClient httpClient = new Windows.Web.Http.HttpClient();
-
-            //Add a user-agent header to the GET request. 
-            var headers = httpClient.DefaultRequestHeaders;
-
-            //The safe way to add a header value is to use the TryParseAdd method and verify the return value is true,
-            //especially if the header value is coming from user input.
-            string header = "ie";
-            if (!headers.UserAgent.TryParseAdd(header))
+            // Only get results when it was a user typing, 
+            // otherwise assume the value got filled in by TextMemberPath 
+            // or the handler for SuggestionChosen.
+            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
             {
-                throw new Exception("Invalid header value: " + header);
-            }
-
-            header = "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; WOW64; Trident/6.0)";
-            if (!headers.UserAgent.TryParseAdd(header))
-            {
-                throw new Exception("Invalid header value: " + header);
-            }
-
-            Uri requestUri = new Uri("https://www.dnd5eapi.co/api/monsters");
-
-            //Send the GET request asynchronously and retrieve the response as a string.
-            Windows.Web.Http.HttpResponseMessage httpResponse = new Windows.Web.Http.HttpResponseMessage();
-            string httpResponseBody = "";
-
-            try
-            {
-                //Send the GET request
-                httpResponse = await httpClient.GetAsync(requestUri);
-                httpResponse.EnsureSuccessStatusCode();
-                httpResponseBody = await httpResponse.Content.ReadAsStringAsync();
-            }
-            catch (Exception ex)
-            {
-                httpResponseBody = "Error: " + ex.HResult.ToString("X") + " Message: " + ex.Message;
+                //Set the ItemsSource to be your filtered dataset
+                //sender.ItemsSource = dataset;
             }
         }
 
 
-        private async void Button_Click(object sender, RoutedEventArgs e)
+        private void AutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
         {
-            MediaElement mediaElement = new MediaElement();
-            var synth = new Windows.Media.SpeechSynthesis.SpeechSynthesizer();
-            Windows.Media.SpeechSynthesis.SpeechSynthesisStream stream = await synth.SynthesizeTextToStreamAsync("Hello, World!");
-            mediaElement.SetSource(stream, stream.ContentType);
-            mediaElement.Play();
+            // Set sender.Text. You can use args.SelectedItem to build your text string.
+        }
+
+
+        private void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            if (args.ChosenSuggestion != null)
+            {
+                // User selected an item from the suggestion list, take an action on it here.
+            }
+            else
+            {
+                // Use args.QueryText to determine what to do.
+            }
+        }
+     
+        private void NextButton_Click(object sender, RoutedEventArgs e)
+        {
+            pageIndex++;
+         
+            List<SimpleMonster> simpleMonsters = mainMonsterList.Skip(pageIndex * pageSize).Take(pageSize).ToList();
+
+            Display_Monsters(simpleMonsters);
+        }
+
+        private void PreviousButton_Click(object sender, RoutedEventArgs e)
+        {
+            pageIndex--;
+
+            List<SimpleMonster> simpleMonsters = mainMonsterList.Skip(pageIndex * pageSize).Take(pageSize).ToList();
+
+            Display_Monsters(simpleMonsters);
+        }
+
+        private async void Display_Monsters(List<SimpleMonster> simpleMonsters)
+        {
+            displayMonsterList.Clear();
+            string requestUrl = "https://www.dnd5eapi.co/api/monsters/";
+
+            foreach (var monster in simpleMonsters)
+            {
+                var json = await FetchAsync(requestUrl + monster.Index);
+                displayMonsterList.Add(JsonConvert.DeserializeObject<FullMonsterDetails>(json));
+            }
+
+            DisplayMonsterList.ItemsSource = displayMonsterList;
+        }
+
+        private async void Get_All_Monsters()
+        {
+            string requestUrl = "https://www.dnd5eapi.co/api/monsters";
+
+            var json = await FetchAsync(requestUrl);
+
+            RootSimpleMonsterResult rootObjectData = JsonConvert.DeserializeObject<RootSimpleMonsterResult>(json);
+            mainMonsterList = new List<SimpleMonster>(rootObjectData.simpleMonsters);
+
+
+            NextButton_Click(null, null);
+        }
+
+        private async Task<string> FetchAsync(string url)
+        {
+            string jsonString;
+
+            using (var httpClient = new System.Net.Http.HttpClient())
+            {
+                var stream = await httpClient.GetStreamAsync(url);
+                StreamReader reader = new StreamReader(stream);
+                jsonString = reader.ReadToEnd();
+            }
+
+            return jsonString;
+        }
+
+        internal class RootSimpleMonsterResult
+        {
+            [JsonProperty("results")]
+            public List<SimpleMonster> simpleMonsters { get; set; }
+        }
+
+        internal class FullMonsterDetails
+        {
+            [JsonProperty("index")]
+            public string Index { get; set; }
+
+            [JsonProperty("name")]
+            public string Name { get; set; }
+
+            [JsonProperty("challenge_rating")]
+            public string CR { get; set; }
+
+            [JsonProperty("size")]
+            public string Size { get; set; }
+
+            [JsonProperty("type")]
+            public string Type { get; set; }
+
+            [JsonProperty("alignment")]
+            public string Alignment { get; set; }
+        }
+
+        internal class SimpleMonster
+        {
+            [JsonProperty("index")]
+            public string Index { get; set; }
+            
+            [JsonProperty("name")]
+            public string Name { get; set; }
         }
     }
 }
