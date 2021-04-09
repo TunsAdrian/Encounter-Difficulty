@@ -13,6 +13,7 @@ namespace encounter_difficulty
     {
 
         private List<SimpleMonster> mainMonsterList;
+        private List<string> monsterNameList;
         private ObservableCollection<FullMonsterDetails> displayMonsterList;
         int pageIndex = -1;
         int pageSize = 10;
@@ -28,13 +29,10 @@ namespace encounter_difficulty
 
         private void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
-            // Only get results when it was a user typing, 
-            // otherwise assume the value got filled in by TextMemberPath 
-            // or the handler for SuggestionChosen.
             if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
             {
-                //Set the ItemsSource to be your filtered dataset
-                //sender.ItemsSource = dataset;
+                var filtered = monsterNameList.Where(monsterName => monsterName.ToLower().Contains(this.SearchBox.Text.ToLower())).ToList();
+                sender.ItemsSource = filtered;
             }
         }
 
@@ -98,7 +96,7 @@ namespace encounter_difficulty
             RootSimpleMonsterResult rootObjectData = JsonConvert.DeserializeObject<RootSimpleMonsterResult>(json);
             mainMonsterList = new List<SimpleMonster>(rootObjectData.simpleMonsters);
 
-
+            monsterNameList = mainMonsterList.Select(monster => monster.Name).ToList();
             NextButton_Click(null, null);
         }
 

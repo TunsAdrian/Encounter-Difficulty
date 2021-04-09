@@ -12,7 +12,7 @@
         <TextBlock HorizontalAlignment="Left" Margin="84,53,0,0" Text="Group Info" TextWrapping="Wrap" VerticalAlignment="Top" Style="{StaticResource TitleTextBlockStyle}"/>
         <TextBlock HorizontalAlignment="Left" Margin="84,99,0,0" Text="Players:" TextWrapping="Wrap" VerticalAlignment="Top"/>
         <TextBlock HorizontalAlignment="Left" Margin="161,99,0,0" Text="Level:" TextWrapping="Wrap" VerticalAlignment="Top"/>
-        <AutoSuggestBox PlaceholderText="Search for a monster..." QueryIcon="Find" HorizontalAlignment="Left" Margin="425,50,0,0" Width="800"
+        <AutoSuggestBox x:Name="SearchBox" PlaceholderText="Search for a monster..." QueryIcon="Find" HorizontalAlignment="Left" Margin="425,50,0,0" Width="800"
                         TextChanged="AutoSuggestBox_TextChanged"
                         QuerySubmitted="AutoSuggestBox_QuerySubmitted"
                         SuggestionChosen="AutoSuggestBox_SuggestionChosen"/>
