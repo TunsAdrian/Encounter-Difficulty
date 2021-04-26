@@ -18,6 +18,7 @@ namespace encounter_difficulty
         ObservableCollection<int> partySizeCollection = new ObservableCollection<int>();
         ObservableCollection<int> partyMembersLevelCollection = new ObservableCollection<int>();
         ObservableCollection<int> pageSizeOptions = new ObservableCollection<int>();
+        List<string> noResultFound = new List<string>(1) { "No such monster found" };
         int pageIndex = -1;
         int pageSize;
 
@@ -53,7 +54,14 @@ namespace encounter_difficulty
             if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
             {
                 var filtered = monsterNameList.Where(monsterName => monsterName.ToLower().Contains(this.SearchBox.Text.ToLower())).ToList();
-                sender.ItemsSource = filtered;
+
+                if (filtered.Count > 0)
+                {
+                    sender.ItemsSource = filtered;
+                } else
+                {
+                    sender.ItemsSource = noResultFound; 
+                }
             }
         }
 
@@ -66,9 +74,14 @@ namespace encounter_difficulty
 
         private void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
-            if (args.ChosenSuggestion != null)
+            if (args.ChosenSuggestion != null && !args.ChosenSuggestion.Equals(noResultFound.First()))
             {
-                // User selected an item from the suggestion list, take an action on it here.
+                List<SimpleMonster> chosenMonster = mainMonsterList.Where(monster => monster.Name.Equals(args.ChosenSuggestion)).ToList();
+                if (chosenMonster.Count > 0)
+                {
+                    Display_Monsters(chosenMonster);
+                    pageIndex = -1;
+                }
             }
             else
             {
@@ -94,6 +107,21 @@ namespace encounter_difficulty
             Display_Monsters(simpleMonsters);
         }
 
+        private void PageSize_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            pageSize = (int)e.AddedItems[0];
+        }
+
+        private void DisplayMonsterList_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            MonsterEncounterList.Items.Add(e.ClickedItem);
+        }
+
+        private void MonsterEncounterList_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            MonsterEncounterList.Items.Remove(e.ClickedItem);
+        }
+
         private async void Display_Monsters(List<SimpleMonster> simpleMonsters)
         {
             displayMonsterList.Clear();
@@ -115,7 +143,7 @@ namespace encounter_difficulty
             var json = await FetchAsync(requestUrl);
 
             RootSimpleMonsterResult rootObjectData = JsonConvert.DeserializeObject<RootSimpleMonsterResult>(json);
-            mainMonsterList = new List<SimpleMonster>(rootObjectData.simpleMonsters);
+            mainMonsterList = new List<SimpleMonster>(rootObjectData.SimpleMonsters);
 
             monsterNameList = mainMonsterList.Select(monster => monster.Name).ToList();
             NextButton_Click(null, null);
@@ -138,7 +166,7 @@ namespace encounter_difficulty
         internal class RootSimpleMonsterResult
         {
             [JsonProperty("results")]
-            public List<SimpleMonster> simpleMonsters { get; set; }
+            public List<SimpleMonster> SimpleMonsters { get; set; }
         }
 
         internal class FullMonsterDetails
@@ -160,6 +188,9 @@ namespace encounter_difficulty
 
             [JsonProperty("alignment")]
             public string Alignment { get; set; }
+
+            [JsonProperty("xp")]
+            public string XP { get; set; }
         }
 
         internal class SimpleMonster
@@ -169,11 +200,6 @@ namespace encounter_difficulty
             
             [JsonProperty("name")]
             public string Name { get; set; }
-        }
-
-        private void PageSize_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            pageSize = (int) e.AddedItems[0];
         }
     }
 }
