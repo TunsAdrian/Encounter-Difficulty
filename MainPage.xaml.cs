@@ -15,17 +15,38 @@ namespace encounter_difficulty
         private List<SimpleMonster> mainMonsterList;
         private List<string> monsterNameList;
         private ObservableCollection<FullMonsterDetails> displayMonsterList;
+        ObservableCollection<int> partySizeCollection = new ObservableCollection<int>();
+        ObservableCollection<int> partyMembersLevelCollection = new ObservableCollection<int>();
+        ObservableCollection<int> pageSizeOptions = new ObservableCollection<int>();
         int pageIndex = -1;
-        int pageSize = 10;
+        int pageSize;
 
         public MainPage()
         {
             this.InitializeComponent();
+            this.InitParty();
 
             Get_All_Monsters();
             displayMonsterList = new ObservableCollection<FullMonsterDetails>();
         }
 
+        private void InitParty()
+        {
+            for (int i = 1; i <= 12; i++)
+            {
+                partySizeCollection.Add(i);
+            }
+   
+            for (int i = 1; i <= 20; i++)
+            {
+                partyMembersLevelCollection.Add(i);
+            }
+
+            pageSizeOptions.Add(10);
+            pageSizeOptions.Add(25);
+            pageSizeOptions.Add(50);
+            pageSizeOptions.Add(100);
+        }
 
         private void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
@@ -148,6 +169,11 @@ namespace encounter_difficulty
             
             [JsonProperty("name")]
             public string Name { get; set; }
+        }
+
+        private void PageSize_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            pageSize = (int) e.AddedItems[0];
         }
     }
 }
