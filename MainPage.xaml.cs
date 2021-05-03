@@ -1,9 +1,11 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
@@ -13,7 +15,7 @@ namespace encounter_difficulty
     {
         private List<SimpleMonster> mainMonsterList;
         private List<string> monsterNameList;
-        private ObservableCollection<FullMonsterDetails> displayMonsterList;
+        private ObservableCollection<FullMonsterDetails> displayMonsterList = new ObservableCollection<FullMonsterDetails>();
         private ObservableCollection<int> partySizeCollection = new ObservableCollection<int>();
         private ObservableCollection<int> partyMembersLevelCollection = new ObservableCollection<int>();
         private ObservableCollection<int> pageSizeOptions = new ObservableCollection<int>();
@@ -28,13 +30,18 @@ namespace encounter_difficulty
         public MainPage()
         {
             this.InitializeComponent();
+            this.InitApplication();
+
+            this.Get_All_Monsters();
+        }
+
+        // Initialization section
+        private void InitApplication()
+        {
             this.InitExpTresholdDictionary();
             this.InitMultipleMonstersXPModifier();
             this.InitComboBox();
-
-            Get_All_Monsters();
-            displayMonsterList = new ObservableCollection<FullMonsterDetails>();
-            //PartySize.SelectedIndex = 2;
+            this.LoadAppState();
         }
 
         private void InitMultipleMonstersXPModifier()
@@ -52,7 +59,7 @@ namespace encounter_difficulty
             {
                 partySizeCollection.Add(i);
             }
-   
+
             for (int i = 1; i <= 20; i++)
             {
                 partyMembersLevelCollection.Add(i);
@@ -62,13 +69,68 @@ namespace encounter_difficulty
             pageSizeOptions.Add(25);
             pageSizeOptions.Add(50);
             pageSizeOptions.Add(100);
+        }
 
-            ComputeEncounterDifficulty();
+        // Save/Load application state section
+        private async void LoadAppState()
+        {
+            ApplicationDataContainer roamingSettings = ApplicationData.Current.RoamingSettings;
+            ApplicationDataCompositeValue composite = (ApplicationDataCompositeValue)roamingSettings.Values["RoamingAppState"];
 
-            // Preselect the combox selected indexes
-            PartySize.SelectedIndex = 2;
-            PartyMembersLevel.SelectedIndex = 3;
-            PageSize.SelectedIndex = 1;
+            if (composite != null)
+            {
+                partySize = (int)composite["PartySize"];
+                partyLevel = (int)composite["PartyLevel"];
+                pageSize = (int)composite["PageSize"];
+            }
+
+            // Preselect the ComboBox selected items
+            PartySize.SelectedItem = partySize;
+            PartyMembersLevel.SelectedItem = partyLevel;
+            PageSize.SelectedItem = pageSize;
+
+            try
+            {
+                StorageFolder applicationFolder = ApplicationData.Current.LocalFolder;
+                StorageFile lastEncounterFile = await applicationFolder.GetFileAsync("last_encounter.txt");
+                var lastEncounterMonsters = await FileIO.ReadTextAsync(lastEncounterFile);
+                dynamic deserializedMonsterList = JsonConvert.DeserializeObject(lastEncounterMonsters);
+
+                foreach (var monster in deserializedMonsterList)
+                {
+                    MonsterEncounterList.Items.Add(new FullMonsterDetails(monster));
+                }
+
+                if (MonsterEncounterList.Items.Count > 0)
+                {
+                    ApplicationHelpText.Visibility = Visibility.Collapsed;
+                }
+            }
+            catch
+            {
+                // if the file does not exist just skip this step
+            }
+
+            this.ComputeEncounterDifficulty();
+        }
+
+        private async void SaveAppState()
+        {
+            ApplicationDataContainer roamingSettings = ApplicationData.Current.RoamingSettings;
+            ApplicationDataCompositeValue composite = new ApplicationDataCompositeValue
+            {
+                ["PartySize"] = partySize,
+                ["PartyLevel"] = partyLevel,
+                ["PageSize"] = pageSize
+            };
+
+            roamingSettings.Values["RoamingAppState"] = composite;
+
+            if (MonsterEncounterList.Items.Count > 0)
+            {
+                StorageFile lastEncounterFile = await ApplicationData.Current.LocalFolder.CreateFileAsync("last_encounter.txt", CreationCollisionOption.ReplaceExisting);
+                await FileIO.WriteTextAsync(lastEncounterFile, JsonConvert.SerializeObject(MonsterEncounterList.Items));
+            }
         }
 
         // Text update section
@@ -126,6 +188,7 @@ namespace encounter_difficulty
 
             UpdatePartyExpTextblocks(partyExpThreshold);
             UpdateEncounterExpTextblocks(totalExperience, totalExperienceAdjusted, encounterDifficuly);
+            SaveAppState();
         }
      
         // List navigation section
@@ -165,6 +228,8 @@ namespace encounter_difficulty
         private void PageSize_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             pageSize = (int)e.AddedItems[0];
+            
+            SaveAppState();
         }
 
         // Lists item click events section
@@ -283,6 +348,22 @@ namespace encounter_difficulty
 
         internal class FullMonsterDetails
         {
+            public FullMonsterDetails()
+            {
+
+            }
+
+            public FullMonsterDetails(dynamic deserializedMonster)
+            {
+                Index = (string)deserializedMonster.index;
+                Name = (string)deserializedMonster.name;
+                CR = (string)deserializedMonster.challenge_rating;
+                Size = (string)deserializedMonster.size;
+                Type = (string)deserializedMonster.type;
+                Alignment = (string)deserializedMonster.alignment;
+                XP = (string)deserializedMonster.xp;
+            }
+
             [JsonProperty("index")]
             public string Index { get; set; }
 

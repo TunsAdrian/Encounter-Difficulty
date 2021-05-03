@@ -8,6 +8,9 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
+        <Grid.Background>
+            <ImageBrush Stretch="Fill" ImageSource="Assets\parchment-background.png" />
+        </Grid.Background>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="35*" />
             <ColumnDefinition Width="auto" />
@@ -121,9 +124,9 @@
                         </ListView.ItemTemplate>
                     </ListView>
                     <TextBlock x:Name="ApplicationHelpText" Grid.Row="1" Margin="12" TextWrapping="WrapWholeWords" Style="{StaticResource SubtitleTextBlockStyle}" FontWeight="SemiLight">
-                        The encounter contains the selected monsters, with their respective <Bold>Combat Rating</Bold> and <Bold>Experience Points</Bold>.
+                        The encounter contains the selected monsters, with their <Bold>Combat Rating</Bold> and <Bold>Experience Points</Bold>.
                         <LineBreak/>To create an encounter add monsters from the right list, <Italic>by clicking an item</Italic>.
-                        <LineBreak/>Monsters can be removed from the left list, also <Italic>by clicking an item</Italic>.
+                        <LineBreak/>Monsters can be removed from the left list, <Italic>by clicking an item</Italic>.
                     </TextBlock>
                 </Grid>
                 <MenuFlyoutSeparator Grid.Row="2"/>
