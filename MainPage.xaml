@@ -125,8 +125,8 @@
                     </ListView>
                     <TextBlock x:Name="ApplicationHelpText" Grid.Row="1" Margin="12" TextWrapping="WrapWholeWords" Style="{StaticResource SubtitleTextBlockStyle}" FontWeight="SemiLight">
                         The encounter contains the selected monsters, with their <Bold>Combat Rating</Bold> and <Bold>Experience Points</Bold>.
-                        <LineBreak/>To create an encounter add monsters from the right list, <Italic>by clicking an item</Italic>.
-                        <LineBreak/>Monsters can be removed from the left list, <Italic>by clicking an item</Italic>.
+                        <LineBreak/><LineBreak/>To create an encounter add monsters from the right list, <Italic>by clicking an item</Italic>.
+                        <LineBreak/><LineBreak/>Monsters can be removed from the left list, <Italic>by clicking an item</Italic>.
                     </TextBlock>
                 </Grid>
                 <MenuFlyoutSeparator Grid.Row="2"/>
@@ -176,7 +176,8 @@
             </Grid>
             <ListView x:Name="DisplayMonsterList" Margin="12" Grid.Row="1" 
                       IsItemClickEnabled="True"
-                      ItemClick="DisplayMonsterList_ItemClick">
+                      ItemClick="DisplayMonsterList_ItemClick"
+                      ItemsSource ="{x:Bind displayMonsterList}">
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <Setter Property="Template">
@@ -248,8 +249,8 @@
                 </ListView.ItemTemplate>
             </ListView>
             <Grid Grid.Row="2" Margin="12">
-                <Button Content="Previous" Click="PreviousButton_Click" Width="100" HorizontalAlignment="Left"/>
-                <Button Content="Next" Click="NextButton_Click" Width="100" HorizontalAlignment="Right"/>
+                <Button x:Name="PreviousButton" Content="Previous" Click="PreviousButton_Click" Width="100" HorizontalAlignment="Left"/>
+                <Button x:Name="NextButton" Content="Next" Click="NextButton_Click" Width="100" HorizontalAlignment="Right"/>
             </Grid>
         </Grid>
     </Grid>

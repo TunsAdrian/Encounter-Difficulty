@@ -152,6 +152,7 @@ namespace encounter_difficulty
         }
 
         // Encounter difficulty computing section
+        // Rules for computing the encounter difficulty were taken from the official source: https://www.dndbeyond.com/sources/basic-rules/building-combat-encounters
         private void ComputeEncounterDifficulty()
         {
             int totalExperience = 0;
@@ -178,7 +179,7 @@ namespace encounter_difficulty
 
                 totalExperienceAdjusted = (int)(totalExperience * multipleMonstersXPModifier[multipleMonstersXPModifierKey]);
 
-                int closestPartyExpThreshold = partyExpThreshold.Values.OrderBy(item => System.Math.Abs(totalExperienceAdjusted - item)).First();
+                int closestPartyExpThreshold = partyExpThreshold.Values.OrderBy(item => Math.Abs(totalExperienceAdjusted - item)).First();
                 encounterDifficuly = partyExpThreshold.FirstOrDefault(x => x.Value == closestPartyExpThreshold).Key;
             }
             else
@@ -192,22 +193,30 @@ namespace encounter_difficulty
         }
      
         // List navigation section
-        private void NextButton_Click(object sender, RoutedEventArgs e)
+        private async void NextButton_Click(object sender, RoutedEventArgs e)
         {
             pageIndex++;
          
             List<SimpleMonster> simpleMonsters = mainMonsterList.Skip(pageIndex * pageSize).Take(pageSize).ToList();
 
-            Display_Monsters(simpleMonsters);
+            NextButton.IsEnabled = PreviousButton.IsEnabled = false;
+
+            await Display_Monsters(simpleMonsters);
+
+            NextButton.IsEnabled = PreviousButton.IsEnabled = true;
         }
 
-        private void PreviousButton_Click(object sender, RoutedEventArgs e)
+        private async void PreviousButton_Click(object sender, RoutedEventArgs e)
         {
             pageIndex--;
 
             List<SimpleMonster> simpleMonsters = mainMonsterList.Skip(pageIndex * pageSize).Take(pageSize).ToList();
 
-            Display_Monsters(simpleMonsters);
+            NextButton.IsEnabled = PreviousButton.IsEnabled = false;
+
+            await Display_Monsters(simpleMonsters);
+
+            NextButton.IsEnabled = PreviousButton.IsEnabled = true;
         }
 
         // Combobox selection events section
@@ -228,7 +237,8 @@ namespace encounter_difficulty
         private void PageSize_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             pageSize = (int)e.AddedItems[0];
-            
+            pageIndex = -1;
+
             SaveAppState();
         }
 
@@ -272,14 +282,14 @@ namespace encounter_difficulty
         }
 
 
-        private void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        private async void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
             if (args.ChosenSuggestion != null && !args.ChosenSuggestion.Equals(noResultFound.First()))
             {
                 List<SimpleMonster> chosenMonster = mainMonsterList.Where(monster => monster.Name.Equals(args.ChosenSuggestion)).ToList();
                 if (chosenMonster.Count > 0)
                 {
-                    Display_Monsters(chosenMonster);
+                    await Display_Monsters(chosenMonster);
                     pageIndex = -1;
                 }
             }
@@ -290,7 +300,7 @@ namespace encounter_difficulty
         }
 
         // API call section
-        private async void Display_Monsters(List<SimpleMonster> simpleMonsters)
+        private async Task Display_Monsters(List<SimpleMonster> simpleMonsters)
         {
             displayMonsterList.Clear();
             string requestUrl = "https://www.dnd5eapi.co/api/monsters/";
@@ -300,8 +310,6 @@ namespace encounter_difficulty
                 var json = await FetchAsync(requestUrl + monster.Index);
                 displayMonsterList.Add(JsonConvert.DeserializeObject<FullMonsterDetails>(json));
             }
-
-            DisplayMonsterList.ItemsSource = displayMonsterList;
         }
 
         private async void Get_All_Monsters()
