@@ -275,13 +275,6 @@ namespace encounter_difficulty
             }
         }
 
-
-        private void AutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
-        {
-            // Set sender.Text. You can use args.SelectedItem to build your text string.
-        }
-
-
         private async void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
             if (args.ChosenSuggestion != null && !args.ChosenSuggestion.Equals(noResultFound.First()))
@@ -295,7 +288,10 @@ namespace encounter_difficulty
             }
             else
             {
-                // Use args.QueryText to determine what to do.
+                if (args.QueryText == "")
+                {
+                    NextButton_Click(null, null);
+                }
             }
         }
 

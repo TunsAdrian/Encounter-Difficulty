@@ -169,8 +169,7 @@
                 <AutoSuggestBox x:Name="SearchBox" PlaceholderText="Search for a monster..." QueryIcon="Find" Margin="12" Grid.Column="0"
                         Header="List of Monsters:"
                         TextChanged="AutoSuggestBox_TextChanged"
-                        QuerySubmitted="AutoSuggestBox_QuerySubmitted"
-                        SuggestionChosen="AutoSuggestBox_SuggestionChosen"/>
+                        QuerySubmitted="AutoSuggestBox_QuerySubmitted"/>
                 <ComboBox x:Name="PageSize" Header="Page Size:" HorizontalAlignment="Center" Grid.Column="1" Margin="12" 
                           ItemsSource="{x:Bind pageSizeOptions}" MaxDropDownHeight="200" SelectionChanged="PageSize_SelectionChanged"/>
             </Grid>
