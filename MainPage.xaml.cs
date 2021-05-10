@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Nito.AsyncEx;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -29,19 +30,18 @@ namespace encounter_difficulty
 
         public MainPage()
         {
-            this.InitializeComponent();
-            this.InitApplication();
-
-            this.Get_All_Monsters();
+            InitializeComponent();
+            InitApplication();
+            Get_All_Monsters();
         }
 
         // Initialization section
         private void InitApplication()
         {
-            this.InitExpTresholdDictionary();
-            this.InitMultipleMonstersXPModifier();
-            this.InitComboBox();
-            this.LoadAppState();
+            InitExpTresholdDictionary();
+            InitMultipleMonstersXPModifier();
+            InitComboBox();
+            AsyncContext.Run(LoadAppState);
         }
 
         private void InitMultipleMonstersXPModifier()
@@ -72,7 +72,7 @@ namespace encounter_difficulty
         }
 
         // Save/Load application state section
-        private async void LoadAppState()
+        private async Task LoadAppState()
         {
             ApplicationDataContainer roamingSettings = ApplicationData.Current.RoamingSettings;
             ApplicationDataCompositeValue composite = (ApplicationDataCompositeValue)roamingSettings.Values["RoamingAppState"];
@@ -111,10 +111,10 @@ namespace encounter_difficulty
                 // if the file does not exist just skip this step
             }
 
-            this.ComputeEncounterDifficulty();
+            ComputeEncounterDifficulty();
         }
 
-        private async void SaveAppState()
+        private async Task SaveAppState()
         {
             ApplicationDataContainer roamingSettings = ApplicationData.Current.RoamingSettings;
             ApplicationDataCompositeValue composite = new ApplicationDataCompositeValue
@@ -126,7 +126,7 @@ namespace encounter_difficulty
 
             roamingSettings.Values["RoamingAppState"] = composite;
 
-            if (MonsterEncounterList.Items.Count > 0)
+            if (MonsterEncounterList.Items.Count >= 0)
             {
                 StorageFile lastEncounterFile = await ApplicationData.Current.LocalFolder.CreateFileAsync("last_encounter.txt", CreationCollisionOption.ReplaceExisting);
                 await FileIO.WriteTextAsync(lastEncounterFile, JsonConvert.SerializeObject(MonsterEncounterList.Items));
@@ -189,7 +189,7 @@ namespace encounter_difficulty
 
             UpdatePartyExpTextblocks(partyExpThreshold);
             UpdateEncounterExpTextblocks(totalExperience, totalExperienceAdjusted, encounterDifficuly);
-            SaveAppState();
+            AsyncContext.Run(SaveAppState);
         }
      
         // List navigation section
@@ -234,12 +234,12 @@ namespace encounter_difficulty
             ComputeEncounterDifficulty();
         }
 
-        private void PageSize_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void PageSize_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             pageSize = (int)e.AddedItems[0];
             pageIndex = -1;
 
-            SaveAppState();
+            await SaveAppState();
         }
 
         // Lists item click events section
@@ -262,7 +262,7 @@ namespace encounter_difficulty
         {
             if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
             {
-                var filtered = monsterNameList.Where(monsterName => monsterName.ToLower().Contains(this.SearchBox.Text.ToLower())).ToList();
+                var filtered = monsterNameList.Where(monsterName => monsterName.ToLower().Contains(SearchBox.Text.ToLower())).ToList();
 
                 if (filtered.Count > 0)
                 {
