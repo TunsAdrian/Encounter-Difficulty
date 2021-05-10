@@ -239,6 +239,10 @@ namespace encounter_difficulty
             pageSize = (int)e.AddedItems[0];
             pageIndex = -1;
 
+            if (mainMonsterList != null) { 
+                NextButton_Click(null, null);
+            }
+
             await SaveAppState();
         }
 
