@@ -14,25 +14,24 @@ namespace encounter_difficulty
 {
     public sealed partial class MainPage : Page
     {
-        private List<SimpleMonster> mainMonsterList;
-        private List<string> monsterNameList;
-        private ObservableCollection<FullMonsterDetails> displayMonsterList = new ObservableCollection<FullMonsterDetails>();
-        private ObservableCollection<int> partySizeCollection = new ObservableCollection<int>();
-        private ObservableCollection<int> partyMembersLevelCollection = new ObservableCollection<int>();
-        private ObservableCollection<int> pageSizeOptions = new ObservableCollection<int>();
-        private List<string> noResultFound = new List<string>(1) { "No such monster found" };
-        private Dictionary<int, Dictionary<string, int>> experienceThresholdByCharacterLevel;
-        private Dictionary<int, double> multipleMonstersXPModifier;
-        private int pageIndex = -1;
         private int pageSize = 10;
+        private int pageIndex = -1;
         private int partySize = 1;
         private int partyLevel = 1;
+        private List<string> monsterNameList;
+        private List<SimpleMonster> mainMonsterList;
+        private Dictionary<int, double> multipleMonstersXPModifier;
+        private Dictionary<int, Dictionary<string, int>> experienceThresholdByCharacterLevel;
+        private readonly List<string> noResultFound = new List<string>(1) { "No such monster found" };
+        private readonly ObservableCollection<int> pageSizeOptions = new ObservableCollection<int>();
+        private readonly ObservableCollection<int> partySizeCollection = new ObservableCollection<int>();
+        private readonly ObservableCollection<int> partyMembersLevelCollection = new ObservableCollection<int>();
+        private readonly ObservableCollection<FullMonsterDetails> displayMonsterList = new ObservableCollection<FullMonsterDetails>();
 
         public MainPage()
         {
             InitializeComponent();
             InitApplication();
-            Get_All_Monsters();
         }
 
         // Initialization section
@@ -42,33 +41,7 @@ namespace encounter_difficulty
             InitMultipleMonstersXPModifier();
             InitComboBox();
             AsyncContext.Run(LoadAppState);
-        }
-
-        private void InitMultipleMonstersXPModifier()
-        {
-            multipleMonstersXPModifier = new Dictionary<int, double>
-            {
-                {1, 1}, {2, 1.5}, {3, 2}, {4, 2}, {5, 2}, {6, 2}, {7, 2.5}, {8, 2.5},
-                {9, 2.5}, {10, 2.5}, {11, 3}, {12, 3}, {13, 3}, {14, 3}, {15, 4}
-            };
-        }
-
-        private void InitComboBox()
-        {
-            for (int i = 1; i <= 12; i++)
-            {
-                partySizeCollection.Add(i);
-            }
-
-            for (int i = 1; i <= 20; i++)
-            {
-                partyMembersLevelCollection.Add(i);
-            }
-
-            pageSizeOptions.Add(10);
-            pageSizeOptions.Add(25);
-            pageSizeOptions.Add(50);
-            pageSizeOptions.Add(100);
+            AsyncContext.Run(Get_All_Monsters);
         }
 
         // Save/Load application state section
@@ -191,19 +164,20 @@ namespace encounter_difficulty
             UpdateEncounterExpTextblocks(totalExperience, totalExperienceAdjusted, encounterDifficuly);
             AsyncContext.Run(SaveAppState);
         }
-     
+
         // List navigation section
+        // When awaiting for the displayed monsters list, disable the options that could start this event again
         private async void NextButton_Click(object sender, RoutedEventArgs e)
         {
             pageIndex++;
-         
+
             List<SimpleMonster> simpleMonsters = mainMonsterList.Skip(pageIndex * pageSize).Take(pageSize).ToList();
 
-            NextButton.IsEnabled = PreviousButton.IsEnabled = false;
+            NextButton.IsEnabled = PreviousButton.IsEnabled = PageSize.IsEnabled = false;
 
             await Display_Monsters(simpleMonsters);
 
-            NextButton.IsEnabled = PreviousButton.IsEnabled = true;
+            NextButton.IsEnabled = PreviousButton.IsEnabled = PageSize.IsEnabled = true;
         }
 
         private async void PreviousButton_Click(object sender, RoutedEventArgs e)
@@ -212,11 +186,11 @@ namespace encounter_difficulty
 
             List<SimpleMonster> simpleMonsters = mainMonsterList.Skip(pageIndex * pageSize).Take(pageSize).ToList();
 
-            NextButton.IsEnabled = PreviousButton.IsEnabled = false;
+            NextButton.IsEnabled = PreviousButton.IsEnabled = PageSize.IsEnabled = false;
 
             await Display_Monsters(simpleMonsters);
 
-            NextButton.IsEnabled = PreviousButton.IsEnabled = true;
+            NextButton.IsEnabled = PreviousButton.IsEnabled = PageSize.IsEnabled = true;
         }
 
         // Combobox selection events section
@@ -239,7 +213,9 @@ namespace encounter_difficulty
             pageSize = (int)e.AddedItems[0];
             pageIndex = -1;
 
-            if (mainMonsterList != null) { 
+            // Reload the list and show it from the begining, when changing the displayed monsters number
+            if (mainMonsterList != null)
+            {
                 NextButton_Click(null, null);
             }
 
@@ -305,24 +281,42 @@ namespace encounter_difficulty
             displayMonsterList.Clear();
             string requestUrl = "https://www.dnd5eapi.co/api/monsters/";
 
-            foreach (var monster in simpleMonsters)
+            try
             {
-                var json = await FetchAsync(requestUrl + monster.Index);
-                displayMonsterList.Add(JsonConvert.DeserializeObject<FullMonsterDetails>(json));
+                foreach (var monster in simpleMonsters)
+                {
+                    var json = await FetchAsync(requestUrl + monster.Index);
+                    displayMonsterList.Add(JsonConvert.DeserializeObject<FullMonsterDetails>(json));
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+                NoInternetError.Visibility = Visibility.Visible;
+                DisplayMonsterList.Visibility = Visibility.Collapsed;
             }
         }
 
-        private async void Get_All_Monsters()
+        private async Task Get_All_Monsters()
         {
             string requestUrl = "https://www.dnd5eapi.co/api/monsters";
 
-            var json = await FetchAsync(requestUrl);
+            try
+            {
+                var json = await FetchAsync(requestUrl);
 
-            RootSimpleMonsterResult rootObjectData = JsonConvert.DeserializeObject<RootSimpleMonsterResult>(json);
-            mainMonsterList = new List<SimpleMonster>(rootObjectData.SimpleMonsters);
+                RootSimpleMonsterResult rootObjectData = JsonConvert.DeserializeObject<RootSimpleMonsterResult>(json);
+                mainMonsterList = new List<SimpleMonster>(rootObjectData.SimpleMonsters);
 
-            monsterNameList = mainMonsterList.Select(monster => monster.Name).ToList();
-            NextButton_Click(null, null);
+                monsterNameList = mainMonsterList.Select(monster => monster.Name).ToList();
+                NextButton_Click(null, null);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+                NoInternetError.Visibility = Visibility.Visible;
+                DisplayMonsterList.Visibility = Visibility.Collapsed;
+            }
         }
 
         private async Task<string> FetchAsync(string url)
@@ -349,7 +343,7 @@ namespace encounter_difficulty
         {
             [JsonProperty("index")]
             public string Index { get; set; }
-            
+
             [JsonProperty("name")]
             public string Name { get; set; }
         }
@@ -358,7 +352,7 @@ namespace encounter_difficulty
         {
             public FullMonsterDetails()
             {
-
+                // empty constructor needed when creating objects directly from JSON
             }
 
             public FullMonsterDetails(dynamic deserializedMonster)
@@ -392,6 +386,33 @@ namespace encounter_difficulty
 
             [JsonProperty("xp")]
             public string XP { get; set; }
+        }
+
+        private void InitComboBox()
+        {
+            for (int i = 1; i <= 12; i++)
+            {
+                partySizeCollection.Add(i);
+            }
+
+            for (int i = 1; i <= 20; i++)
+            {
+                partyMembersLevelCollection.Add(i);
+            }
+
+            pageSizeOptions.Add(10);
+            pageSizeOptions.Add(25);
+            pageSizeOptions.Add(50);
+            pageSizeOptions.Add(100);
+        }
+
+        private void InitMultipleMonstersXPModifier()
+        {
+            multipleMonstersXPModifier = new Dictionary<int, double>
+            {
+                {1, 1}, {2, 1.5}, {3, 2}, {4, 2}, {5, 2}, {6, 2}, {7, 2.5}, {8, 2.5},
+                {9, 2.5}, {10, 2.5}, {11, 3}, {12, 3}, {13, 3}, {14, 3}, {15, 4}
+            };
         }
 
         private void InitExpTresholdDictionary()

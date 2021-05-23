@@ -125,7 +125,7 @@
                     </ListView>
                     <TextBlock x:Name="ApplicationHelpText" Grid.Row="1" Margin="12" TextWrapping="WrapWholeWords" Style="{StaticResource SubtitleTextBlockStyle}" FontWeight="SemiLight">
                         The encounter contains the selected monsters, with their <Bold>Combat Rating</Bold> and <Bold>Experience Points</Bold>.
-                        <LineBreak/><LineBreak/>To create an encounter add monsters from the right list, <Italic>by clicking an item</Italic>.
+                        <LineBreak/><LineBreak/>To create an encounter, add monsters from the right list, <Italic>by clicking an item</Italic>.
                         <LineBreak/><LineBreak/>Monsters can be removed from the left list, <Italic>by clicking an item</Italic>.
                     </TextBlock>
                 </Grid>
@@ -173,80 +173,89 @@
                 <ComboBox x:Name="PageSize" Header="Page Size:" HorizontalAlignment="Center" Grid.Column="1" Margin="12" 
                           ItemsSource="{x:Bind pageSizeOptions}" MaxDropDownHeight="200" SelectionChanged="PageSize_SelectionChanged"/>
             </Grid>
-            <ListView x:Name="DisplayMonsterList" Margin="12" Grid.Row="1" 
+            <Grid Grid.Row="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="100*"/>
+                </Grid.RowDefinitions>
+                <TextBlock x:Name="NoInternetError" Grid.Row="0" Margin="12" TextWrapping="WrapWholeWords" Style="{StaticResource SubtitleTextBlockStyle}" FontWeight="SemiLight" Visibility="Collapsed">
+                        No internet connection was found. Please connect to the internet and <Bold>restart</Bold> the application.
+                </TextBlock>
+                <ListView x:Name="DisplayMonsterList" Margin="12" Grid.Row="1" 
                       IsItemClickEnabled="True"
                       ItemClick="DisplayMonsterList_ItemClick"
                       ItemsSource ="{x:Bind displayMonsterList}">
-                <ListView.ItemContainerStyle>
-                    <Style TargetType="ListViewItem">
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="ListViewItem">
-                                    <ListViewItemPresenter ContentMargin="0" Padding="0" />
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </ListView.ItemContainerStyle>
-                <ListView.HeaderTemplate>
-                    <DataTemplate>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="30*" />
-                                <ColumnDefinition Width="10*" />
-                                <ColumnDefinition Width="20*" />
-                                <ColumnDefinition Width="20*" />
-                                <ColumnDefinition Width="20*" />
-                            </Grid.ColumnDefinitions>
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListViewItem">
+                                        <ListViewItemPresenter ContentMargin="0" Padding="0" />
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.HeaderTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="30*" />
+                                    <ColumnDefinition Width="10*" />
+                                    <ColumnDefinition Width="20*" />
+                                    <ColumnDefinition Width="20*" />
+                                    <ColumnDefinition Width="20*" />
+                                </Grid.ColumnDefinitions>
 
-                            <Border Grid.Column="0" BorderBrush="Black" BorderThickness="1">
-                                <TextBlock Text="Name" Margin="5" FontWeight="Bold"/>
-                            </Border>
-                            <Border Grid.Column="1" BorderBrush="Black" BorderThickness="0, 1, 1, 1">
-                                <TextBlock Text="CR" Margin="5" FontWeight="Bold"/>
-                            </Border>
-                            <Border Grid.Column="2" BorderBrush="Black" BorderThickness="0, 1, 1, 1">
-                                <TextBlock Text="Size" Margin="5" FontWeight="Bold" />
-                            </Border>
-                            <Border Grid.Column="3" BorderBrush="Black" BorderThickness="0, 1, 1, 1">
-                                <TextBlock Text="Type" Margin="5" FontWeight="Bold"/>
-                            </Border>
-                            <Border Grid.Column="4" BorderBrush="Black" BorderThickness="0, 1, 1, 1">
-                                <TextBlock Text="Alignment" Margin="5" FontWeight="Bold"/>
-                            </Border>
-                        </Grid>
-                    </DataTemplate>
-                </ListView.HeaderTemplate>
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="30*" />
-                                <ColumnDefinition Width="10*" />
-                                <ColumnDefinition Width="20*" />
-                                <ColumnDefinition Width="20*" />
-                                <ColumnDefinition Width="20*" />
-                            </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" BorderBrush="Black" BorderThickness="1">
+                                    <TextBlock Text="Name" Margin="5" FontWeight="Bold"/>
+                                </Border>
+                                <Border Grid.Column="1" BorderBrush="Black" BorderThickness="0, 1, 1, 1">
+                                    <TextBlock Text="CR" Margin="5" FontWeight="Bold"/>
+                                </Border>
+                                <Border Grid.Column="2" BorderBrush="Black" BorderThickness="0, 1, 1, 1">
+                                    <TextBlock Text="Size" Margin="5" FontWeight="Bold" />
+                                </Border>
+                                <Border Grid.Column="3" BorderBrush="Black" BorderThickness="0, 1, 1, 1">
+                                    <TextBlock Text="Type" Margin="5" FontWeight="Bold"/>
+                                </Border>
+                                <Border Grid.Column="4" BorderBrush="Black" BorderThickness="0, 1, 1, 1">
+                                    <TextBlock Text="Alignment" Margin="5" FontWeight="Bold"/>
+                                </Border>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.HeaderTemplate>
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="30*" />
+                                    <ColumnDefinition Width="10*" />
+                                    <ColumnDefinition Width="20*" />
+                                    <ColumnDefinition Width="20*" />
+                                    <ColumnDefinition Width="20*" />
+                                </Grid.ColumnDefinitions>
 
-                            <Border Grid.Column="0" BorderBrush="Gray" BorderThickness="0,0,0.5,0.5">
-                                <TextBlock Text="{Binding Name}" Margin="5" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="Light"/>
-                            </Border>
-                            <Border Grid.Column="1" BorderBrush="Gray" BorderThickness="0,0,0.5,0.5">
-                                <TextBlock Text="{Binding CR}" Margin="5" VerticalAlignment="Center"/>
-                            </Border>
-                            <Border Grid.Column="2" BorderBrush="Gray" BorderThickness="0,0,0.5,0.5">
-                                <TextBlock Text="{Binding Size}" Margin="5" VerticalAlignment="Center"/>
-                            </Border>
-                            <Border Grid.Column="3" BorderBrush="Gray" BorderThickness="0,0,0.5,0.5">
-                                <TextBlock Text="{Binding Type}"  Margin="5" VerticalAlignment="Center"/>
-                            </Border>
-                            <Border Grid.Column="4" BorderBrush="Gray" BorderThickness="0,0,0,0.5">
-                                <TextBlock Text="{Binding Alignment}"  Margin="5" VerticalAlignment="Center"/>
-                            </Border>
-                        </Grid>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
+                                <Border Grid.Column="0" BorderBrush="Gray" BorderThickness="0,0,0.5,0.5">
+                                    <TextBlock Text="{Binding Name}" Margin="5" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="Light"/>
+                                </Border>
+                                <Border Grid.Column="1" BorderBrush="Gray" BorderThickness="0,0,0.5,0.5">
+                                    <TextBlock Text="{Binding CR}" Margin="5" VerticalAlignment="Center"/>
+                                </Border>
+                                <Border Grid.Column="2" BorderBrush="Gray" BorderThickness="0,0,0.5,0.5">
+                                    <TextBlock Text="{Binding Size}" Margin="5" VerticalAlignment="Center"/>
+                                </Border>
+                                <Border Grid.Column="3" BorderBrush="Gray" BorderThickness="0,0,0.5,0.5">
+                                    <TextBlock Text="{Binding Type}"  Margin="5" VerticalAlignment="Center"/>
+                                </Border>
+                                <Border Grid.Column="4" BorderBrush="Gray" BorderThickness="0,0,0,0.5">
+                                    <TextBlock Text="{Binding Alignment}"  Margin="5" VerticalAlignment="Center"/>
+                                </Border>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
             <Grid Grid.Row="2" Margin="12">
                 <Button x:Name="PreviousButton" Content="Previous" Click="PreviousButton_Click" Width="100" HorizontalAlignment="Left"/>
                 <Button x:Name="NextButton" Content="Next" Click="NextButton_Click" Width="100" HorizontalAlignment="Right"/>
