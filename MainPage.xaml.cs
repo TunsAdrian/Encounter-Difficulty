@@ -119,7 +119,7 @@ namespace encounter_difficulty
         {
             TotalXP.Text = "Total XP: " + totalExperience.ToString("N0") + " exp";
             PlayerXP.Text = "(" + (totalExperience / partySize).ToString("N0") + " per player)";
-            TotalAdjustedXP.Text = "Total XP: " + totalExperienceAdjusted.ToString("N0") + " exp";
+            TotalAdjustedXP.Text = "Adjusted XP: " + totalExperienceAdjusted.ToString("N0") + " exp";
             PlayerAdjustedXP.Text = "(" + (totalExperienceAdjusted / partySize).ToString("N0") + " per player)";
             EncounterDifficulty.Text = "Difficulty: " + difficulty;
         }
