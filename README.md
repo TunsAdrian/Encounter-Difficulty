@@ -7,6 +7,8 @@ The last state of the application is saved, therefore the application starts wit
 
 The monster information is taken from [D&amp;D 5e API](https://www.dnd5eapi.co), so an internet connection is always required for the application to work.
 
+For more information regarding the usage of the application, consult the following [documentation](https://github.com/TunsAdrian/Encounter-Difficulty/blob/master/Documentation.pdf).
+
 Screenshot from the D&amp;D Combat Encounter Difficulty:
 
 ![Alt text](/Assets/application_screenshot.png?raw=true "Optional Title")
